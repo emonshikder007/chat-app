@@ -40,7 +40,7 @@ export const useChatStore = create((set, get) => ({
 
   createGroup: async (groupData) => {
     try {
-      const res = await axiosInstance.post("/groups", groupData);
+      const res = await axiosInstance.post("/groups/create", groupData);
       set({ groups: [...get().groups, res.data] });
       toast.success("Group created successfully!");
     } catch (error) {
