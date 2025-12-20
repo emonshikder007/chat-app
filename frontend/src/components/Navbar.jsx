@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { LogOut, MessageSquare, Settings, User, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import GroupModal from './GroupModal';
+import GroupModal from './GroupModel.jsx';
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
