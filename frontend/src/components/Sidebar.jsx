@@ -61,7 +61,7 @@ const Sidebar = () => {
           USERS
         </p>
 
-        {Array.isArray(filteredUsers) && filteredUsers.map((user) => (
+        {(filteredUsers || []).map((user) => (
           <button
             key={user._id}
             onClick={() =>
@@ -111,7 +111,7 @@ const Sidebar = () => {
           GROUPS
         </p>
 
-        {Array.isArray(groups) && groups?.map((group) => (
+        {(groups || []).map((group) => (
           <button
             key={group._id}
             onClick={() =>
