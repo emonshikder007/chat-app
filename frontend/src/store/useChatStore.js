@@ -7,9 +7,10 @@ export const useChatStore = create((set, get) => ({
   messages: [],
   users: [],
   groups: [],
-  selectedChat: null, // <-- type: "private" | "group", data: {}
+  selectedChat: null, // type: "private" | "group", data: {}
   isUsersLoading: false,
   isMessagesLoading: false,
+  isGroupsLoading: false,
 
   // ====== USERS ======
   getUsers: async () => {
@@ -26,14 +27,61 @@ export const useChatStore = create((set, get) => ({
 
   // ====== GROUPS ======
   getGroups: async () => {
-    set({ isUsersLoading: true });
+    set({ isGroupsLoading: true });
     try {
-      const res = await axiosInstance.get("/groups"); // <-- backend api
+      const res = await axiosInstance.get("/groups");
       set({ groups: res.data });
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
     } finally {
-      set({ isUsersLoading: false });
+      set({ isGroupsLoading: false });
+    }
+  },
+
+  createGroup: async (groupData) => {
+    try {
+      const res = await axiosInstance.post("/groups", groupData);
+      set({ groups: [...get().groups, res.data] });
+      toast.success("Group created successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
+  },
+
+  addMember: async (groupId, userId) => {
+    try {
+      const res = await axiosInstance.post(`/groups/${groupId}/add`, { userId });
+      const updatedGroups = get().groups.map((g) =>
+        g._id === groupId ? res.data : g
+      );
+      set({ groups: updatedGroups });
+      toast.success("Member added successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
+  },
+
+  kickMember: async (groupId, userId) => {
+    try {
+      const res = await axiosInstance.post(`/groups/${groupId}/kick`, { userId });
+      const updatedGroups = get().groups.map((g) =>
+        g._id === groupId ? res.data : g
+      );
+      set({ groups: updatedGroups });
+      toast.success("Member kicked successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
+  },
+
+  deleteGroup: async (groupId) => {
+    try {
+      await axiosInstance.delete(`/groups/${groupId}`);
+      const updatedGroups = get().groups.filter((g) => g._id !== groupId);
+      set({ groups: updatedGroups });
+      toast.success("Group deleted successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
     }
   },
 
