@@ -7,10 +7,19 @@ const messageSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
+        chatType: {
+            type: String,
+            enum: ["private", "group"],
+            required: true,
+        },
         receiverId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
+        },
+        groupId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Group",
         },
         text: {
             type: String,

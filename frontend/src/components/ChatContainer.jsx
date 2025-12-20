@@ -1,6 +1,5 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
-import { useEffect } from "react";
 import MessageInput from "./MessageInput";
 import ChatHeader from "./ChatHeader";
 import MessageSkeleton from "./skeleton/MessageSkeleton";
@@ -8,24 +7,31 @@ import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 
 const ChatContainer = () => {
-  const { messages, getMessages, isMessagesLoading, selectedUser, subscribeToMessages, unsubscribeFromMessages } =
-    useChatStore();
+  const {
+    messages,
+    getMessages,
+    isMessagesLoading,
+    selectedChat,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
 
   useEffect(() => {
-    getMessages(selectedUser._id);
+    if (!selectedChat) return;
 
+    getMessages(selectedChat.data._id, selectedChat.type);
     subscribeToMessages();
 
     return () => unsubscribeFromMessages();
-  }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+  }, [selectedChat]);
 
   useEffect(() => {
-    if(messageEndRef.current && messages) {
+    if (messageEndRef.current && messages) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages])
+  }, [messages]);
 
   if (isMessagesLoading)
     return (
@@ -33,6 +39,13 @@ const ChatContainer = () => {
         <ChatHeader />
         <MessageSkeleton />
         <MessageInput />
+      </div>
+    );
+
+  if (!selectedChat)
+    return (
+      <div className="flex-1 flex items-center justify-center text-zinc-400">
+        Select a chat to start messaging
       </div>
     );
 
@@ -55,12 +68,21 @@ const ChatContainer = () => {
                   src={
                     message.senderId === authUser._id
                       ? authUser.profilePic || "/avatar.png"
-                      : selectedUser.profilePic || "/avatar.png"
+                      : selectedChat.type === "private"
+                      ? selectedChat.data.profilePic || "/avatar.png"
+                      : "/avatar.png"
                   }
                   alt="Profile Pic"
                 />
               </div>
             </div>
+
+            {selectedChat.type === "group" &&
+              message.senderId !== authUser._id && (
+                <div className="text-xs text-zinc-400 ml-2">
+                  {message.senderName}
+                </div>
+              )}
 
             <div className="chat-header mb-1">
               <time className="text-x5 opacity-50 ml-1">
