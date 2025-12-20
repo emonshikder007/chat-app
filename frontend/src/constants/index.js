@@ -1,4 +1,6 @@
-export const THEMES = [
+// themes.js
+
+const rawThemes = [
   { name: "light" },
   { name: "dark" },
   { name: "cupcake" },
@@ -31,5 +33,9 @@ export const THEMES = [
   { name: "dim" },
   { name: "nord" },
   { name: "sunset" },
-].map((t) => t.name); 
+];
 
+
+export const THEMES = Array.isArray(rawThemes)
+  ? rawThemes.map((t) => t.name)
+  : [];
