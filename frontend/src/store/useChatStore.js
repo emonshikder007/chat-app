@@ -50,7 +50,9 @@ export const useChatStore = create((set, get) => ({
 
   addMember: async (groupId, userId) => {
     try {
-      const res = await axiosInstance.post(`/groups/${groupId}/add`, { userId });
+      const res = await axiosInstance.post(`/groups/${groupId}/add`, {
+        userId,
+      });
       const updatedGroups = get().groups.map((g) =>
         g._id === groupId ? res.data : g
       );
@@ -63,7 +65,9 @@ export const useChatStore = create((set, get) => ({
 
   kickMember: async (groupId, userId) => {
     try {
-      const res = await axiosInstance.post(`/groups/${groupId}/kick`, { userId });
+      const res = await axiosInstance.post(`/groups/${groupId}/kick`, {
+        userId,
+      });
       const updatedGroups = get().groups.map((g) =>
         g._id === groupId ? res.data : g
       );
@@ -92,7 +96,9 @@ export const useChatStore = create((set, get) => ({
       const url =
         type === "private" ? `/messages/${id}` : `/groups/${id}/messages`;
       const res = await axiosInstance.get(url);
-      set({ messages: res.data });
+      set({
+        messages: Array.isArray(res.data) ? res.data : [],
+      });
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
     } finally {
