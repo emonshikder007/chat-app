@@ -27,14 +27,18 @@ export const useChatStore = create((set, get) => ({
 
   // ====== GROUPS ======
   getGroups: async () => {
-    set({ isGroupsLoading: true });
+    set({ isUsersLoading: true });
     try {
       const res = await axiosInstance.get("/groups");
-      set({ groups: res.data });
+
+      // 🔥 FORCE array
+      set({
+        groups: Array.isArray(res.data) ? res.data : res.data.groups || [],
+      });
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
     } finally {
-      set({ isGroupsLoading: false });
+      set({ isUsersLoading: false });
     }
   },
 
@@ -95,9 +99,11 @@ export const useChatStore = create((set, get) => ({
     try {
       const url =
         type === "private" ? `/messages/${id}` : `/groups/${id}/messages`;
+
       const res = await axiosInstance.get(url);
+
       set({
-        messages: Array.isArray(res.data) ? res.data : [],
+        messages: Array.isArray(res.data) ? res.data : res.data.messages || [],
       });
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
