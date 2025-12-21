@@ -1,4 +1,3 @@
-// GroupModal.jsx
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { useChatStore } from "../store/useChatStore";
