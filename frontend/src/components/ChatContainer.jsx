@@ -22,7 +22,7 @@ const ChatContainer = () => {
     if (!selectedChat) return;
 
     getMessages(selectedChat.data._id, selectedChat.type);
-    subscribeToMessages();
+    subscribeToMessages(selectedChat.data._id, selectedChat.type);
 
     return () => unsubscribeFromMessages();
   }, [selectedChat]);
