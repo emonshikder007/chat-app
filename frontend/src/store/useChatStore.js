@@ -10,9 +10,8 @@ export const useChatStore = create((set, get) => ({
   selectedChat: null,
   isUsersLoading: false,
   isMessagesLoading: false,
-  isGroupsLoading: false,
 
-  // ====== USERS ======
+  // ===== USERS =====
   getUsers: async () => {
     set({ isUsersLoading: true });
     try {
@@ -25,12 +24,11 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  // ====== GROUPS ======
+  // ===== GROUPS =====
   getGroups: async () => {
     set({ isUsersLoading: true });
     try {
       const res = await axiosInstance.get("/groups");
-
       set({
         groups: Array.isArray(res.data) ? res.data : res.data.groups || [],
       });
@@ -41,66 +39,13 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  createGroup: async (groupData) => {
-    try {
-      const res = await axiosInstance.post("/groups/create", groupData);
-      set({ groups: [...get().groups, res.data] });
-      toast.success("Group created successfully!");
-    } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
-    }
-  },
-
-  addMember: async (groupId, userId) => {
-    try {
-      const res = await axiosInstance.post(`/groups/${groupId}/add`, {
-        userId,
-      });
-      const updatedGroups = get().groups.map((g) =>
-        g._id === groupId ? res.data : g
-      );
-      set({ groups: updatedGroups });
-      toast.success("Member added successfully!");
-    } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
-    }
-  },
-
-  kickMember: async (groupId, userId) => {
-    try {
-      const res = await axiosInstance.post(`/groups/${groupId}/kick`, {
-        userId,
-      });
-      const updatedGroups = get().groups.map((g) =>
-        g._id === groupId ? res.data : g
-      );
-      set({ groups: updatedGroups });
-      toast.success("Member kicked successfully!");
-    } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
-    }
-  },
-
-  deleteGroup: async (groupId) => {
-    try {
-      await axiosInstance.delete(`/groups/${groupId}`);
-      const updatedGroups = get().groups.filter((g) => g._id !== groupId);
-      set({ groups: updatedGroups });
-      toast.success("Group deleted successfully!");
-    } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
-    }
-  },
-
-  // ====== MESSAGES ======
+  // ===== MESSAGES =====
   getMessages: async (id, type = "private") => {
     set({ isMessagesLoading: true });
     try {
       const url =
         type === "private" ? `/messages/${id}` : `/groups/${id}/messages`;
-
       const res = await axiosInstance.get(url);
-
       set({
         messages: Array.isArray(res.data) ? res.data : res.data.messages || [],
       });
@@ -126,10 +71,10 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  // ===== SOCKET SUBSCRIBE =====
   subscribeToMessages: () => {
     const { selectedChat } = get();
     if (!selectedChat) return;
-
     const socket = useAuthStore.getState().socket;
 
     if (selectedChat.type === "private") {
@@ -151,9 +96,5 @@ export const useChatStore = create((set, get) => ({
     socket.off("newGroupMessage");
   },
 
-  setSelectedChat: (chat) =>
-    set({
-      selectedChat: chat,
-      messages: [],
-    }),
+  setSelectedChat: (chat) => set({ selectedChat: chat }),
 }));
