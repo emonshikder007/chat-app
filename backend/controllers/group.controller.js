@@ -83,7 +83,7 @@ export const getGroups = async (req, res) => {
       members: req.user._id,
     });
 
-    res.status(200).json(groups); // ⚠️ MUST BE ARRAY
+    res.status(200).json(groups);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

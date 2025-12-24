@@ -8,7 +8,7 @@ router.post("/create", protectRoute, createGroup);
 router.post("/add-member", protectRoute, addMember);
 router.post("/kick", protectRoute, removeMember);
 router.delete("/:groupId", protectRoute, deleteGroup);
-router.get("/", protectRoute, getGroups);
+router.get("/groups", protectRoute, getGroups);
 
 
 export default router;
