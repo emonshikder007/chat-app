@@ -28,7 +28,7 @@ export const useChatStore = create((set, get) => ({
   getGroups: async () => {
     set({ isUsersLoading: true });
     try {
-      const res = await axiosInstance.get("/groups");
+      const res = await axiosInstance.get("/groups/groups");
       set({
         groups: Array.isArray(res.data) ? res.data : res.data.groups || [],
       });
