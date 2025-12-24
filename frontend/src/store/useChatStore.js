@@ -74,8 +74,9 @@ export const useChatStore = create((set, get) => ({
   // ===== SOCKET SUBSCRIBE =====
   subscribeToMessages: () => {
     const { selectedChat } = get();
-    if (!selectedChat) return;
     const socket = useAuthStore.getState().socket;
+
+    if (!selectedChat || !socket) return;
 
     if (selectedChat.type === "private") {
       socket.on("newMessage", (newMessage) => {

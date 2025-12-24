@@ -24,7 +24,7 @@ const ChatContainer = () => {
     getMessages(selectedChat.data._id, selectedChat.type);
     subscribeToMessages();
 
-    return () => unsubscribeFromMessages();
+    return unsubscribeFromMessages;
   }, [selectedChat]);
 
   useEffect(() => {
