@@ -78,21 +78,26 @@ export const useChatStore = create((set, get) => ({
 
     if (!selectedChat || !socket) return;
 
+    socket.off("newMessage");
+    socket.off("newGroupMessage");
+
     if (selectedChat.type === "private") {
       socket.on("newMessage", (newMessage) => {
         if (newMessage.senderId !== selectedChat.data._id) return;
-        set({ messages: [...get().messages, newMessage] });
+        set((state) => ({ messages: [...state.messages, newMessage] }));
       });
     } else {
       socket.on("newGroupMessage", (newMessage) => {
         if (newMessage.groupId !== selectedChat.data._id) return;
-        set({ messages: [...get().messages, newMessage] });
+        set((state) => ({ messages: [...state.messages, newMessage] }));
       });
     }
   },
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+
     socket.off("newMessage");
     socket.off("newGroupMessage");
   },
