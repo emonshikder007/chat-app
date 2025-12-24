@@ -11,6 +11,7 @@ export const useChatStore = create((set, get) => ({
   isUsersLoading: false,
   isMessagesLoading: false,
 
+  // ===== USERS =====
   getUsers: async () => {
     set({ isUsersLoading: true });
     try {
@@ -23,26 +24,34 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  // ===== GROUPS =====
   getGroups: async () => {
-    set({ isUsersLoading: true });
+    // Note: User loading flag might conflict if both called same time, generally ok
     try {
-      const res = await axiosInstance.get("/groups/grps");
-      set({ groups: Array.isArray(res.data) ? res.data : res.data.groups || [] });
+      const res = await axiosInstance.get("/groups/grps"); // Verify backend route matches this
+      set({
+        groups: Array.isArray(res.data) ? res.data : res.data.groups || [],
+      });
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
-    } finally {
-      set({ isUsersLoading: false });
+      console.error("Error fetching groups:", error);
+      toast.error(error.response?.data?.message || "Failed to fetch groups");
     }
   },
 
+  // ===== MESSAGES =====
   getMessages: async (id, type = "private") => {
-    set({ isMessagesLoading: true });
+    set({ isMessagesLoading: true, messages: [] }); // Clear old messages first
     try {
-      const url = type === "private" ? `/messages/${id}` : `/groups/${id}/messages`;
+      const url =
+        type === "private" ? `/messages/${id}` : `/groups/${id}/messages`;
+      
       const res = await axiosInstance.get(url);
-      set({ messages: Array.isArray(res.data) ? res.data : res.data.messages || [] });
+      set({
+        messages: Array.isArray(res.data) ? res.data : res.data.messages || [],
+      });
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
+      set({ messages: [] });
     } finally {
       set({ isMessagesLoading: false });
     }
@@ -56,6 +65,7 @@ export const useChatStore = create((set, get) => ({
         selectedChat.type === "private"
           ? `/messages/send/${selectedChat.data._id}`
           : `/groups/${selectedChat.data._id}/send`;
+          
       const res = await axiosInstance.post(url, messageData);
       set({ messages: [...messages, res.data] });
     } catch (error) {
@@ -63,11 +73,14 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  // ===== SOCKET SUBSCRIBE =====
   subscribeToMessages: () => {
     const { selectedChat } = get();
     const socket = useAuthStore.getState().socket;
+
     if (!selectedChat || !socket) return;
 
+    // Clean up previous listeners first to avoid duplicates
     socket.off("newMessage");
     socket.off("newGroupMessage");
 
@@ -87,9 +100,12 @@ export const useChatStore = create((set, get) => ({
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
+
     socket.off("newMessage");
     socket.off("newGroupMessage");
   },
 
-  setSelectedChat: (chat) => set({ selectedChat: chat, messages: [] }),
+  setSelectedChat: (chat) => {
+    set({ selectedChat: chat }); // Just set the chat, getMessages will handle loading state
+  },
 }));

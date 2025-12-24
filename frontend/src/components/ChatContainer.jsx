@@ -7,59 +7,78 @@ import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 
 const ChatContainer = () => {
-  const messages = useChatStore((s) => s.messages);
-  const getMessages = useChatStore((s) => s.getMessages);
-  const selectedChat = useChatStore((s) => s.selectedChat);
-  const isMessagesLoading = useChatStore((s) => s.isMessagesLoading);
-  const subscribeToMessages = useChatStore((s) => s.subscribeToMessages);
-  const unsubscribeFromMessages = useChatStore((s) => s.unsubscribeFromMessages);
+  const {
+    messages,
+    getMessages,
+    isMessagesLoading,
+    selectedChat,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  } = useChatStore();
 
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
 
+  // 1. Fetch messages when a chat is selected
   useEffect(() => {
-    if (!selectedChat) return;
+    if (!selectedChat?.data?._id) return;
 
     const fetchMessages = async () => {
+      // Ensure we pass the ID and Type correctly
       await getMessages(selectedChat.data._id, selectedChat.type);
       subscribeToMessages();
     };
 
     fetchMessages();
-    return () => unsubscribeFromMessages();
-  }, [selectedChat]);
 
+    // Cleanup subscription on unmount or chat switch
+    return () => unsubscribeFromMessages();
+  }, [selectedChat?.data?._id, selectedChat?.type, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+
+  // 2. Auto scroll to bottom when new messages arrive
   useEffect(() => {
-    if (messageEndRef.current) {
+    if (messageEndRef.current && messages) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
-  if (!selectedChat)
+  // RENDER LOGIC
+  
+  // Case A: Loading State
+  if (isMessagesLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center text-zinc-400">
-        Select a chat to start messaging
-      </div>
-    );
-
-  if (isMessagesLoading)
-    return (
-      <div className="flex-1 flex flex-col overflow-auto">
+      <div className="flex-1 flex flex-col overflow-auto h-full">
         <ChatHeader />
         <MessageSkeleton />
         <MessageInput />
       </div>
     );
+  }
 
+  // Case B: No Chat Selected (Initial State)
+  if (!selectedChat) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center h-full bg-base-100 text-zinc-400 space-y-4">
+        <div className="bg-base-200 p-6 rounded-full animate-bounce">
+           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <p className="text-lg font-medium">Select a chat to start messaging</p>
+      </div>
+    );
+  }
+
+  // Case C: Chat Interface
   return (
-    <div className="flex-1 flex flex-col overflow-auto">
+    <div className="flex-1 flex flex-col overflow-auto h-full">
       <ChatHeader />
+
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
+        {(Array.isArray(messages) ? messages : []).map((message) => (
           <div
             key={message._id}
-            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
-            ref={messageEndRef}
+            className={`chat ${
+              message.senderId === authUser._id ? "chat-end" : "chat-start"
+            }`}
           >
             <div className="chat-image avatar">
               <div className="size-10 rounded-full border">
@@ -68,8 +87,8 @@ const ChatContainer = () => {
                     message.senderId === authUser._id
                       ? authUser.profilePic || "/avatar.png"
                       : selectedChat.type === "private"
-                      ? selectedChat.data.profilePic || "/avatar.png"
-                      : "/avatar.png"
+                        ? selectedChat.data.profilePic || "/avatar.png"
+                        : "/avatar.png"
                   }
                   alt="Profile Pic"
                 />
@@ -77,11 +96,13 @@ const ChatContainer = () => {
             </div>
 
             {selectedChat.type === "group" && message.senderId !== authUser._id && (
-              <div className="text-xs text-zinc-400 ml-2">{message.senderName}</div>
+               <div className="chat-header mb-1 ml-1 text-xs font-bold opacity-70">
+                 {message.senderName || "Member"}
+               </div>
             )}
 
             <div className="chat-header mb-1">
-              <time className="text-x5 opacity-50 ml-1">
+              <time className="text-xs opacity-50 ml-1">
                 {formatMessageTime(message.createdAt)}
               </time>
             </div>
@@ -98,7 +119,10 @@ const ChatContainer = () => {
             </div>
           </div>
         ))}
+        {/* Dummy div for auto-scroll target */}
+        <div ref={messageEndRef} />
       </div>
+
       <MessageInput />
     </div>
   );
