@@ -17,6 +17,9 @@ const ChatContainer = () => {
   } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
+  console.log("getMessages:", getMessages);
+  console.log("subscribeToMessages:", subscribeToMessages);
+  console.log("unsubscribeFromMessages:", unsubscribeFromMessages);
 
   useEffect(() => {
     if (!selectedChat) return;
