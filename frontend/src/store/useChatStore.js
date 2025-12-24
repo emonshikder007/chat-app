@@ -11,7 +11,6 @@ export const useChatStore = create((set, get) => ({
   isUsersLoading: false,
   isMessagesLoading: false,
 
-  // ===== USERS =====
   getUsers: async () => {
     set({ isUsersLoading: true });
     try {
@@ -24,14 +23,11 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  // ===== GROUPS =====
   getGroups: async () => {
     set({ isUsersLoading: true });
     try {
       const res = await axiosInstance.get("/groups/grps");
-      set({
-        groups: Array.isArray(res.data) ? res.data : res.data.groups || [],
-      });
+      set({ groups: Array.isArray(res.data) ? res.data : res.data.groups || [] });
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
     } finally {
@@ -39,16 +35,12 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  // ===== MESSAGES =====
   getMessages: async (id, type = "private") => {
     set({ isMessagesLoading: true });
     try {
-      const url =
-        type === "private" ? `/messages/${id}` : `/groups/${id}/messages`;
+      const url = type === "private" ? `/messages/${id}` : `/groups/${id}/messages`;
       const res = await axiosInstance.get(url);
-      set({
-        messages: Array.isArray(res.data) ? res.data : res.data.messages || [],
-      });
+      set({ messages: Array.isArray(res.data) ? res.data : res.data.messages || [] });
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
     } finally {
@@ -71,11 +63,9 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  // ===== SOCKET SUBSCRIBE =====
   subscribeToMessages: () => {
     const { selectedChat } = get();
     const socket = useAuthStore.getState().socket;
-
     if (!selectedChat || !socket) return;
 
     socket.off("newMessage");
@@ -97,14 +87,9 @@ export const useChatStore = create((set, get) => ({
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
-
     socket.off("newMessage");
     socket.off("newGroupMessage");
   },
 
-  setSelectedChat: (chat) =>
-    set({
-      selectedChat: chat,
-      messages: [],
-    }),
+  setSelectedChat: (chat) => set({ selectedChat: chat, messages: [] }),
 }));
