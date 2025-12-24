@@ -23,6 +23,10 @@ const Sidebar = () => {
     getGroups();
   }, [getUsers, getGroups]);
 
+  useEffect(() => {
+    console.log("Selected chat:", selectedChat);
+  }, [selectedChat]);
+
   const filteredUsers = showOnlineOnly
     ? users.filter((user) => onlineUsers.includes(user._id))
     : users;
@@ -62,12 +66,16 @@ const Sidebar = () => {
           <button
             key={user._id}
             onClick={() => setSelectedChat({ type: "private", data: user })}
-            className={`w-full p-3 cursor-pointer rounded-[5px] flex items-center gap-3 hover:bg-base-300 transition-colors ${
-              selectedChat?.type === "private" &&
-              selectedChat?.data?._id === user._id
-                ? "bg-base-300 ring-1 ring-base-300"
-                : ""
-            }`}
+            className={`
+              w-full p-3 cursor-pointer rounded-[5px] flex items-center gap-3
+              hover:bg-base-300 transition-colors
+              ${
+                selectedChat?.type === "private" &&
+                selectedChat?.data?._id === user._id
+                  ? "bg-base-300 ring-1 ring-base-300"
+                  : ""
+              }
+            `}
           >
             <div className="relative mx-auto lg:mx-0">
               <img
@@ -96,18 +104,24 @@ const Sidebar = () => {
 
       {/* ===== GROUPS ===== */}
       <div className="border-t border-base-300 pt-3">
-        <p className="hidden lg:block px-4 text-xs text-zinc-400 mb-2">GROUPS</p>
+        <p className="hidden lg:block px-4 text-xs text-zinc-400 mb-2">
+          GROUPS
+        </p>
 
         {(Array.isArray(groups) ? groups : []).map((group) => (
           <button
             key={group._id}
             onClick={() => setSelectedChat({ type: "group", data: group })}
-            className={`w-full p-3 cursor-pointer rounded-[5px] flex items-center gap-3 hover:bg-base-300 transition-colors ${
-              selectedChat?.type === "group" &&
-              selectedChat?.data?._id === group._id
-                ? "bg-base-300 ring-1 ring-base-300"
-                : ""
-            }`}
+            className={`
+              w-full p-3 cursor-pointer rounded-[5px] flex items-center gap-3
+              hover:bg-base-300 transition-colors
+              ${
+                selectedChat?.type === "group" &&
+                selectedChat?.data?._id === group._id
+                  ? "bg-base-300 ring-1 ring-base-300"
+                  : ""
+              }
+            `}
           >
             <div className="mx-auto lg:mx-0">
               <UsersRound className="size-10 text-sky-400" />
@@ -115,7 +129,9 @@ const Sidebar = () => {
 
             <div className="hidden lg:block text-left min-w-0">
               <div className="font-medium truncate">{group.name}</div>
-              <div className="text-sm text-zinc-400">{group.members.length} members</div>
+              <div className="text-sm text-zinc-400">
+                {group.members.length} members
+              </div>
             </div>
           </button>
         ))}
