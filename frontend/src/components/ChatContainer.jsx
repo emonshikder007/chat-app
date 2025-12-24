@@ -16,6 +16,12 @@ const ChatContainer = () => {
     (s) => s.unsubscribeFromMessages
   );
 
+  console.log("STORE CHECK ", {
+    getMessages,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  });
+
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
   console.log("getMessages:", getMessages);
