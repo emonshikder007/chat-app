@@ -28,7 +28,7 @@ export const useChatStore = create((set, get) => ({
   getGroups: async () => {
     set({ isUsersLoading: true });
     try {
-      const res = await axiosInstance.get("/groups/groups");
+      const res = await axiosInstance.get("/groups/grps");
       set({
         groups: Array.isArray(res.data) ? res.data : res.data.groups || [],
       });
@@ -97,5 +97,9 @@ export const useChatStore = create((set, get) => ({
     socket.off("newGroupMessage");
   },
 
-  setSelectedChat: (chat) => set({ selectedChat: chat }),
+  setSelectedChat: (chat) =>
+    set({
+      selectedChat: chat,
+      messages: [],
+    }),
 }));

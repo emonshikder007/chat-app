@@ -5,15 +5,15 @@ import { Users, UsersRound } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 
 const Sidebar = () => {
-  const {
-    getUsers,
-    users,
-    groups,
-    getGroups,
-    selectedChat,
-    setSelectedChat,
-    isUsersLoading,
-  } = useChatStore();
+
+  
+  const getUsers = useChatStore((s) => s.getUsers);
+  const getGroups = useChatStore((s) => s.getGroups);
+  const users = useChatStore((s) => s.users);
+  const groups = useChatStore((s) => s.groups);
+  const selectedChat = useChatStore((s) => s.selectedChat);
+  const setSelectedChat = useChatStore((s) => s.setSelectedChat);
+  const isUsersLoading = useChatStore((s) => s.isUsersLoading);
 
   const { onlineUsers } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);

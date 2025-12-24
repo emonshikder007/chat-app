@@ -7,14 +7,17 @@ import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 
 const ChatContainer = () => {
-  const {
-    messages,
-    getMessages,
-    isMessagesLoading,
-    selectedChat,
-    subscribeToMessages,
-    unsubscribeFromMessages,
-  } = useChatStore();
+
+  
+  const messages = useChatStore((s) => s.messages);
+  const getMessages = useChatStore((s) => s.getMessages);
+  const isMessagesLoading = useChatStore((s) => s.isMessagesLoading);
+  const selectedChat = useChatStore((s) => s.selectedChat);
+  const subscribeToMessages = useChatStore((s) => s.subscribeToMessages);
+  const unsubscribeFromMessages = useChatStore(
+    (s) => s.unsubscribeFromMessages
+  );
+
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
   console.log("getMessages:", getMessages);
