@@ -5,6 +5,8 @@ import { Users, UsersRound } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 
 const Sidebar = () => {
+
+  
   const getUsers = useChatStore((s) => s.getUsers);
   const getGroups = useChatStore((s) => s.getGroups);
   const users = useChatStore((s) => s.users);
@@ -21,31 +23,25 @@ const Sidebar = () => {
     getGroups();
   }, [getUsers, getGroups]);
 
+  useEffect(() => {
+    console.log("Selected chat:", selectedChat);
+  }, [selectedChat]);
+
   const filteredUsers = showOnlineOnly
     ? users.filter((user) => onlineUsers.includes(user._id))
     : users;
 
-  const handleUserClick = (user) => {
-    console.log("User Clicked:", user);
-    setSelectedChat({ type: "private", data: user });
-  };
-
-  const handleGroupClick = (group) => {
-    console.log("Group Clicked:", group);
-    setSelectedChat({ type: "group", data: group });
-  };
-
   if (isUsersLoading) return <SidebarSkeleton />;
 
   return (
-    <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200 overflow-hidden">
+    <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
       {/* ===== HEADER ===== */}
       <div className="border-b border-base-300 w-full p-5">
         <div className="flex items-center gap-2">
           <Users className="w-6 h-6" />
           <span className="font-medium hidden lg:block">Contacts</span>
         </div>
-        {/* Online Filter Toggle */}
+
         <div className="mt-3 hidden lg:flex items-center gap-2">
           <label className="cursor-pointer flex items-center gap-2">
             <input
@@ -57,22 +53,28 @@ const Sidebar = () => {
             <span className="text-sm">Show online only</span>
           </label>
           <span className="text-xs text-zinc-500">
-            ({onlineUsers.length > 0 ? onlineUsers.length - 1 : 0} online)
+            ({onlineUsers.length - 1} online)
           </span>
         </div>
       </div>
 
-      <div className="overflow-y-auto w-full py-3 flex-1">
-        {/* ===== USERS ===== */}
-        <p className="hidden lg:block px-4 text-xs text-zinc-400 mb-2 font-semibold">USERS</p>
+      {/* ===== USERS ===== */}
+      <div className="overflow-y-auto w-full py-3">
+        <p className="hidden lg:block px-4 text-xs text-zinc-400 mb-2">USERS</p>
+
         {(Array.isArray(filteredUsers) ? filteredUsers : []).map((user) => (
           <button
             key={user._id}
-            onClick={() => handleUserClick(user)}
+            onClick={() => setSelectedChat({ type: "private", data: user })}
             className={`
               w-full p-3 cursor-pointer rounded-[5px] flex items-center gap-3
               hover:bg-base-300 transition-colors
-              ${selectedChat?.data?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
+              ${
+                selectedChat?.type === "private" &&
+                selectedChat?.data?._id === user._id
+                  ? "bg-base-300 ring-1 ring-base-300"
+                  : ""
+              }
             `}
           >
             <div className="relative mx-auto lg:mx-0">
@@ -85,6 +87,7 @@ const Sidebar = () => {
                 <span className="absolute bottom-1 right-0 size-3 bg-green-500 rounded-full ring-2 ring-zinc-900" />
               )}
             </div>
+
             <div className="hidden lg:block text-left min-w-0">
               <div className="font-medium truncate">{user.fullName}</div>
               <div className="text-sm text-zinc-400">
@@ -97,33 +100,45 @@ const Sidebar = () => {
         {filteredUsers.length === 0 && (
           <div className="text-center text-zinc-500 py-4">No users found</div>
         )}
+      </div>
 
-        {/* ===== GROUPS ===== */}
-        <div className="border-t border-base-300 mt-4 pt-4">
-          <p className="hidden lg:block px-4 text-xs text-zinc-400 mb-2 font-semibold">GROUPS</p>
-          {(Array.isArray(groups) ? groups : []).map((group) => (
-            <button
-              key={group._id}
-              onClick={() => handleGroupClick(group)}
-              className={`
-                w-full p-3 cursor-pointer rounded-[5px] flex items-center gap-3
-                hover:bg-base-300 transition-colors
-                ${selectedChat?.data?._id === group._id ? "bg-base-300 ring-1 ring-base-300" : ""}
-              `}
-            >
-              <div className="mx-auto lg:mx-0">
-                <UsersRound className="size-10 text-sky-400 bg-base-200 p-2 rounded-full" />
+      {/* ===== GROUPS ===== */}
+      <div className="border-t border-base-300 pt-3">
+        <p className="hidden lg:block px-4 text-xs text-zinc-400 mb-2">
+          GROUPS
+        </p>
+
+        {(Array.isArray(groups) ? groups : []).map((group) => (
+          <button
+            key={group._id}
+            onClick={() => setSelectedChat({ type: "group", data: group })}
+            className={`
+              w-full p-3 cursor-pointer rounded-[5px] flex items-center gap-3
+              hover:bg-base-300 transition-colors
+              ${
+                selectedChat?.type === "group" &&
+                selectedChat?.data?._id === group._id
+                  ? "bg-base-300 ring-1 ring-base-300"
+                  : ""
+              }
+            `}
+          >
+            <div className="mx-auto lg:mx-0">
+              <UsersRound className="size-10 text-sky-400" />
+            </div>
+
+            <div className="hidden lg:block text-left min-w-0">
+              <div className="font-medium truncate">{group.name}</div>
+              <div className="text-sm text-zinc-400">
+                {group.members.length} members
               </div>
-              <div className="hidden lg:block text-left min-w-0">
-                <div className="font-medium truncate">{group.name}</div>
-                <div className="text-sm text-zinc-400">{group.members.length} members</div>
-              </div>
-            </button>
-          ))}
-          {groups?.length === 0 && (
-            <div className="text-center text-zinc-500 py-3">No groups</div>
-          )}
-        </div>
+            </div>
+          </button>
+        ))}
+
+        {groups?.length === 0 && (
+          <div className="text-center text-zinc-500 py-3">No groups</div>
+        )}
       </div>
     </aside>
   );
