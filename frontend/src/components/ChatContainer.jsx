@@ -29,15 +29,17 @@ const ChatContainer = () => {
   console.log("unsubscribeFromMessages:", unsubscribeFromMessages);
 
   useEffect(() => {
-    if (!selectedChat?.data?._id) return;
+    if (!selectedChat) return;
 
-    getMessages(selectedChat.data._id, selectedChat.type);
-    subscribeToMessages();
-
-    return () => {
-      unsubscribeFromMessages();
+    const fetchMessages = async () => {
+      await getMessages(selectedChat.data._id, selectedChat.type);
+      subscribeToMessages();
     };
-  }, [selectedChat?.data?._id]);
+
+    fetchMessages();
+
+    return () => unsubscribeFromMessages();
+  }, [selectedChat]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
