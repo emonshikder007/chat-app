@@ -41,7 +41,7 @@ useEffect(() => {
   return () => {
     unsubscribeFromMessages();
   };
-}, [selectedChat]); // selectedChat change হলে proper cleanup + fetch
+}, [selectedChat]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
