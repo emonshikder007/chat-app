@@ -15,7 +15,9 @@ const messageSchema = new mongoose.Schema(
         receiverId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: true,
+            required: function () {
+                return this.chatType === "private";
+            },
         },
         groupId: {
             type: mongoose.Schema.Types.ObjectId,

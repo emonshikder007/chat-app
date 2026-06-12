@@ -50,6 +50,7 @@ export const sendMessage = async (req, res) => {
     const newMessage = new Message({
       senderId,
       receiverId,
+      chatType: "private",
       text,
       image: imageUrl,
     });
@@ -63,11 +64,11 @@ export const sendMessage = async (req, res) => {
 
     res.status(201).json(newMessage);
   } catch (error) {
-  console.log("========== SEND MESSAGE ERROR ==========");
-  console.log(error);
-  console.log(error.message);
-  res.status(500).json({ error: "Internal server Error" });
-}
+    console.log("========== SEND MESSAGE ERROR ==========");
+    console.log(error);
+    console.log(error.message);
+    res.status(500).json({ error: "Internal server Error" });
+  }
 };
 
 export const sendGroupMessage = async (req, res) => {
