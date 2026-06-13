@@ -133,48 +133,51 @@ export const useChatStore = create((set, get) => ({
       toast.error(error.response?.data?.message || error.message);
     }
 
-    
+
   },
 
   // ===== SOCKET SUBSCRIBE =====
-subscribeToMessages: () => {
-  const { selectedChat } = get();
-  const socket = useAuthStore.getState().socket;
+  subscribeToMessages: () => {
+    const { selectedChat } = get();
+    const socket = useAuthStore.getState().socket;
 
-  if (!selectedChat || !socket) return;
+    if (!selectedChat || !socket) return;
 
-  // IMPORTANT: remove old listeners first
-  socket.off("newMessage");
-  socket.off("newGroupMessage");
+    // IMPORTANT: remove old listeners first
+    socket.off("newMessage");
+    socket.off("newGroupMessage");
 
-  // PRIVATE CHAT
-  if (selectedChat.type === "private") {
-    socket.on("newMessage", (newMessage) => {
-      if (!newMessage) return;
+    // PRIVATE CHAT
+    if (selectedChat.type === "private") {
+      socket.on("newMessage", (newMessage) => {
+        console.log("NEW MSG:", newMessage);
 
-      const isChatMatch =
-        newMessage.senderId === selectedChat.data._id ||
-        newMessage.receiverId === selectedChat.data._id;
+        const myId = useAuthStore.getState().authUser?._id;
 
-      if (!isChatMatch) return;
+        const isValidMessage =
+          newMessage.senderId === selectedChat.data._id ||
+          newMessage.receiverId === selectedChat.data._id ||
+          newMessage.senderId === myId;
 
-      set((state) => ({
-        messages: [...state.messages, newMessage],
-      }));
-    });
-  }
+        if (!isValidMessage) return;
 
-  // GROUP CHAT
-  if (selectedChat.type === "group") {
-    socket.on("newGroupMessage", (newMessage) => {
-      if (newMessage.groupId !== selectedChat.data._id) return;
+        set((state) => ({
+          messages: [...state.messages, newMessage],
+        }));
+      });
+    }
 
-      set((state) => ({
-        messages: [...state.messages, newMessage],
-      }));
-    });
-  }
-},
+    // GROUP CHAT
+    if (selectedChat.type === "group") {
+      socket.on("newGroupMessage", (newMessage) => {
+        if (newMessage.groupId !== selectedChat.data._id) return;
+
+        set((state) => ({
+          messages: [...state.messages, newMessage],
+        }));
+      });
+    }
+  },
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
