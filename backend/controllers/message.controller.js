@@ -1,6 +1,6 @@
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
-import group from "../models/groupMessage.model.js";
+import Group from "../models/groupMessage.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 
