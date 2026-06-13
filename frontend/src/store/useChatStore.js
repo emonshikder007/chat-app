@@ -146,12 +146,7 @@ export const useChatStore = create((set, get) => ({
 
     if (selectedChat.type === "private") {
       socket.on("newMessage", (newMessage) => {
-        if (
-          newMessage.senderId?.toString() !==
-          selectedChat.data._id?.toString()
-        ) {
-          return;
-        }
+        console.log("NEW MESSAGE:", newMessage);
 
         set((state) => {
           const exists = state.messages.some(
