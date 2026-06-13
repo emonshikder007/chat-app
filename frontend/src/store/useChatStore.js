@@ -155,6 +155,18 @@ deleteGroup: async (groupId) => {
         set((state) => ({ messages: [...state.messages, newMessage] }));
       });
     }
+
+socket.on("newMessage", (newMessage) => {
+  console.log("NEW MESSAGE RECEIVED:", newMessage);
+
+  if (newMessage.senderId !== selectedChat.data._id) return;
+
+  set((state) => ({
+    messages: [...state.messages, newMessage],
+  }));
+});
+
+
   },
 
   unsubscribeFromMessages: () => {
