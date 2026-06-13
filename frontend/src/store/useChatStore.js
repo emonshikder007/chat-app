@@ -42,65 +42,65 @@ export const useChatStore = create((set, get) => ({
 
 
   createGroup: async (groupData) => {
-  try {
-    const res = await axiosInstance.post("/groups/create", groupData);
+    try {
+      const res = await axiosInstance.post("/groups/create", groupData);
 
-    set((state) => ({
-      groups: [...state.groups, res.data],
-    }));
+      set((state) => ({
+        groups: [...state.groups, res.data],
+      }));
 
-    toast.success("Group created");
-  } catch (error) {
-    console.error(error);
-    toast.error(error.response?.data?.error || error.message);
-  }
-},
+      toast.success("Group created");
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.error || error.message);
+    }
+  },
 
-addMember: async (groupId, userId) => {
-  try {
-    const res = await axiosInstance.post("/groups/add-member", {
-      groupId,
-      userId,
-    });
+  addMember: async (groupId, userId) => {
+    try {
+      const res = await axiosInstance.post("/groups/add-member", {
+        groupId,
+        userId,
+      });
 
-    toast.success("Member added");
-    return res.data;
-  } catch (error) {
-    toast.error(error.response?.data?.error || error.message);
-  }
-},
+      toast.success("Member added");
+      return res.data;
+    } catch (error) {
+      toast.error(error.response?.data?.error || error.message);
+    }
+  },
 
-kickMember: async (groupId, memberId) => {
-  try {
-    const res = await axiosInstance.post("/groups/kick", {
-      groupId,
-      memberId,
-    });
+  kickMember: async (groupId, memberId) => {
+    try {
+      const res = await axiosInstance.post("/groups/kick", {
+        groupId,
+        memberId,
+      });
 
-    toast.success("Member removed");
-    return res.data;
-  } catch (error) {
-    toast.error(error.response?.data?.error || error.message);
-  }
-},
+      toast.success("Member removed");
+      return res.data;
+    } catch (error) {
+      toast.error(error.response?.data?.error || error.message);
+    }
+  },
 
-deleteGroup: async (groupId) => {
-  try {
-    await axiosInstance.delete(`/groups/${groupId}`);
+  deleteGroup: async (groupId) => {
+    try {
+      await axiosInstance.delete(`/groups/${groupId}`);
 
-    set((state) => ({
-      groups: state.groups.filter((g) => g._id !== groupId),
-      selectedChat:
-        state.selectedChat?.data?._id === groupId
-          ? null
-          : state.selectedChat,
-    }));
+      set((state) => ({
+        groups: state.groups.filter((g) => g._id !== groupId),
+        selectedChat:
+          state.selectedChat?.data?._id === groupId
+            ? null
+            : state.selectedChat,
+      }));
 
-    toast.success("Group deleted");
-  } catch (error) {
-    toast.error(error.response?.data?.error || error.message);
-  }
-},
+      toast.success("Group deleted");
+    } catch (error) {
+      toast.error(error.response?.data?.error || error.message);
+    }
+  },
 
   // ===== MESSAGES =====
   getMessages: async (id, type = "private") => {
@@ -138,37 +138,58 @@ deleteGroup: async (groupId) => {
   subscribeToMessages: () => {
     const { selectedChat } = get();
     const socket = useAuthStore.getState().socket;
+
     if (!selectedChat || !socket) return;
 
-    // Remove old listeners first
     socket.off("newMessage");
     socket.off("newGroupMessage");
 
     if (selectedChat.type === "private") {
       socket.on("newMessage", (newMessage) => {
-        if (newMessage.senderId !== selectedChat.data._id) return;
-        set((state) => ({ messages: [...state.messages, newMessage] }));
-      });
-    } else {
-      socket.on("newGroupMessage", (newMessage) => {
-        if (newMessage.groupId !== selectedChat.data._id) return;
-        set((state) => ({ messages: [...state.messages, newMessage] }));
+        if (
+          newMessage.senderId?.toString() !==
+          selectedChat.data._id?.toString()
+        ) {
+          return;
+        }
+
+        set((state) => {
+          const exists = state.messages.some(
+            (msg) => msg._id === newMessage._id
+          );
+
+          if (exists) return state;
+
+          return {
+            messages: [...state.messages, newMessage],
+          };
+        });
       });
     }
 
-socket.on("newMessage", (newMessage) => {
-  console.log("NEW MESSAGE RECEIVED:", newMessage);
+    if (selectedChat.type === "group") {
+      socket.on("newGroupMessage", (newMessage) => {
+        if (
+          newMessage.groupId?.toString() !==
+          selectedChat.data._id?.toString()
+        ) {
+          return;
+        }
 
-  if (newMessage.senderId !== selectedChat.data._id) return;
+        set((state) => {
+          const exists = state.messages.some(
+            (msg) => msg._id === newMessage._id
+          );
 
-  set((state) => ({
-    messages: [...state.messages, newMessage],
-  }));
-});
+          if (exists) return state;
 
-
+          return {
+            messages: [...state.messages, newMessage],
+          };
+        });
+      });
+    }
   },
-
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
