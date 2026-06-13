@@ -40,6 +40,22 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+
+  createGroup: async (groupData) => {
+  try {
+    const res = await axiosInstance.post("/groups/create", groupData);
+
+    set((state) => ({
+      groups: [...state.groups, res.data],
+    }));
+
+    toast.success("Group created");
+  } catch (error) {
+    console.error(error);
+    toast.error(error.response?.data?.error || error.message);
+  }
+},
+
   // ===== MESSAGES =====
   getMessages: async (id, type = "private") => {
     set({ isMessagesLoading: true });
