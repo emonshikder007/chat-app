@@ -10,6 +10,7 @@ const ChatHeader = () => {
 
   const isPrivate = selectedChat.type === "private";
   const data = selectedChat.data;
+  console.log(selectedChat);
 
   return (
     <div className="p-2.5 border-b border-base-300">
