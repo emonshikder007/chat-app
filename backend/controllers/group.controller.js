@@ -18,7 +18,7 @@ export const createGroup = async (req, res) => {
 };
 
 export const addMember = async (req, res) => {
-  const { groupId, userId } = user.body;
+  const { groupId, userId } = req.body;
   const adminId = req.user._id;
 
   const group = await Group.findById(groupId);

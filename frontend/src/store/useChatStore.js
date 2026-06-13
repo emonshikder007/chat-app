@@ -56,6 +56,52 @@ export const useChatStore = create((set, get) => ({
   }
 },
 
+addMember: async (groupId, userId) => {
+  try {
+    const res = await axiosInstance.post("/groups/add-member", {
+      groupId,
+      userId,
+    });
+
+    toast.success("Member added");
+    return res.data;
+  } catch (error) {
+    toast.error(error.response?.data?.error || error.message);
+  }
+},
+
+kickMember: async (groupId, memberId) => {
+  try {
+    const res = await axiosInstance.post("/groups/kick", {
+      groupId,
+      memberId,
+    });
+
+    toast.success("Member removed");
+    return res.data;
+  } catch (error) {
+    toast.error(error.response?.data?.error || error.message);
+  }
+},
+
+deleteGroup: async (groupId) => {
+  try {
+    await axiosInstance.delete(`/groups/${groupId}`);
+
+    set((state) => ({
+      groups: state.groups.filter((g) => g._id !== groupId),
+      selectedChat:
+        state.selectedChat?.data?._id === groupId
+          ? null
+          : state.selectedChat,
+    }));
+
+    toast.success("Group deleted");
+  } catch (error) {
+    toast.error(error.response?.data?.error || error.message);
+  }
+},
+
   // ===== MESSAGES =====
   getMessages: async (id, type = "private") => {
     set({ isMessagesLoading: true });
