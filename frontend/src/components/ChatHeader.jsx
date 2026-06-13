@@ -86,6 +86,19 @@ const ChatHeader = () => {
               >
                 Delete
               </button>
+
+              {
+                selectedChat.type === "group" &&
+                selectedChat.data.admin !== authUser._id && (
+                  <button
+                    onClick={() =>
+                      leaveGroup(selectedChat.data._id)
+                    }
+                  >
+                    Leave Group
+                  </button>
+                )
+              }
             </>
           )}
 

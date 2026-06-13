@@ -88,3 +88,36 @@ export const getGroups = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+export const leaveGroup = async (req, res) => {
+  const { groupId } = req.body;
+
+  const userId = req.user._id;
+
+  const group = await Group.findById(groupId);
+
+  if (!group) {
+    return res.status(404).json({
+      error: "Group not found",
+    });
+  }
+
+  if (
+    group.admin.toString() === userId.toString()
+  ) {
+    return res.status(400).json({
+      error: "Admin can't leave group",
+    });
+  }
+
+  group.members = group.members.filter(
+    (id) => id.toString() !== userId.toString()
+  );
+
+  await group.save();
+
+  res.json({
+    success: true,
+  });
+};

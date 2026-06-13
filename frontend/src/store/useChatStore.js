@@ -102,6 +102,21 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+
+  leaveGroup: async (groupId) => {
+  try {
+    await axiosInstance.post("/groups/leave", {
+      groupId,
+    });
+
+    toast.success("Left group");
+  } catch (error) {
+    toast.error(
+      error.response?.data?.error
+    );
+  }
+},
+
   // ===== MESSAGES =====
   getMessages: async (id, type = "private") => {
     set({ isMessagesLoading: true });
