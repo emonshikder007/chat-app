@@ -97,7 +97,14 @@ export const sendGroupMessage = async (req, res) => {
 
     res.status(201).json(newMessage);
   } catch (error) {
-    res.status(500).json({ error: "Failed to send group message" });
+    console.log("========== GROUP ERROR ==========");
+    console.log(error);
+    console.log(error.message);
+    console.log(error.stack);
+
+    res.status(500).json({
+      error: error.message,
+    });
   }
 };
 
