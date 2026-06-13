@@ -28,20 +28,23 @@ const ChatContainer = () => {
   console.log("subscribeToMessages:", subscribeToMessages);
   console.log("unsubscribeFromMessages:", unsubscribeFromMessages);
 
-useEffect(() => {
-  if (!selectedChat) return;
+  useEffect(() => {
+    if (!selectedChat?.data?._id) return;
 
-  const fetchMessages = async () => {
-    await getMessages(selectedChat.data._id, selectedChat.type);
-    subscribeToMessages();
-  };
+    const loadChat = async () => {
+      await getMessages(selectedChat.data._id, selectedChat.type);
 
-  fetchMessages();
+      setTimeout(() => {
+        subscribeToMessages();
+      }, 0);
+    };
 
-  return () => {
-    unsubscribeFromMessages();
-  };
-}, [selectedChat]);
+    loadChat();
+
+    return () => {
+      unsubscribeFromMessages();
+    };
+  }, [selectedChat?.data?._id, selectedChat?.type]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
@@ -73,9 +76,8 @@ useEffect(() => {
         {(Array.isArray(messages) ? messages : []).map((message) => (
           <div
             key={message._id}
-            className={`chat ${
-              message.senderId === authUser._id ? "chat-end" : "chat-start"
-            }`}
+            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"
+              }`}
             ref={messageEndRef}
           >
             <div className="chat-image avatar">
@@ -85,8 +87,8 @@ useEffect(() => {
                     message.senderId === authUser._id
                       ? authUser.profilePic || "/avatar.png"
                       : selectedChat.type === "private"
-                      ? selectedChat.data.profilePic || "/avatar.png"
-                      : "/avatar.png"
+                        ? selectedChat.data.profilePic || "/avatar.png"
+                        : "/avatar.png"
                   }
                   alt="Profile Pic"
                 />

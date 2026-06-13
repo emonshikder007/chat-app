@@ -138,43 +138,58 @@ export const useChatStore = create((set, get) => ({
 
   // ===== SOCKET SUBSCRIBE =====
   subscribeToMessages: () => {
-    const { selectedChat } = get();
     const socket = useAuthStore.getState().socket;
+    const { selectedChat } = get();
 
-    if (!selectedChat || !socket) return;
+    if (!socket || !selectedChat) return;
 
-    // IMPORTANT: remove old listeners first
+
     socket.off("newMessage");
     socket.off("newGroupMessage");
 
-    // PRIVATE CHAT
     if (selectedChat.type === "private") {
       socket.on("newMessage", (newMessage) => {
-        console.log("NEW MSG:", newMessage);
+        console.log("SOCKET MSG:", newMessage);
 
         const myId = useAuthStore.getState().authUser?._id;
 
-        const isValidMessage =
+        const isChatRelated =
           newMessage.senderId === selectedChat.data._id ||
           newMessage.receiverId === selectedChat.data._id ||
-          newMessage.senderId === myId;
+          newMessage.senderId === myId ||
+          newMessage.receiverId === myId;
 
-        if (!isValidMessage) return;
+        if (!isChatRelated) return;
 
-        set((state) => ({
-          messages: [...state.messages, newMessage],
-        }));
+        set((state) => {
+          const exists = state.messages.some(
+            (m) => m._id === newMessage._id
+          );
+
+          if (exists) return state;
+
+          return {
+            messages: [...state.messages, newMessage],
+          };
+        });
       });
     }
 
-    // GROUP CHAT
     if (selectedChat.type === "group") {
       socket.on("newGroupMessage", (newMessage) => {
         if (newMessage.groupId !== selectedChat.data._id) return;
 
-        set((state) => ({
-          messages: [...state.messages, newMessage],
-        }));
+        set((state) => {
+          const exists = state.messages.some(
+            (m) => m._id === newMessage._id
+          );
+
+          if (exists) return state;
+
+          return {
+            messages: [...state.messages, newMessage],
+          };
+        });
       });
     }
   },
