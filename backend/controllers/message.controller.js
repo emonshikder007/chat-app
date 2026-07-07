@@ -60,20 +60,23 @@ export const sendMessage = async (req, res) => {
     await newMessage.save();
 
     console.log("====================================");
-    console.log("📩 NEW MESSAGE SAVED");
+    console.log(" NEW MESSAGE SAVED");
     console.log("Sender ID:", senderId.toString());
     console.log("Receiver ID:", receiverId);
 
+    console.log("ReceiverId Type:", typeof receiverId);
+    console.log("ReceiverId:", receiverId);
     const receiverSocketId = getReceiverSocketId(receiverId);
+    console.log("Socket Found:", receiverSocketId);
 
     console.log("Receiver Socket ID:", receiverSocketId);
 
     if (receiverSocketId) {
-      console.log("✅ Emitting 'newMessage' event...");
+      console.log(" Emitting 'newMessage' event...");
       io.to(receiverSocketId).emit("newMessage", newMessage);
-      console.log("✅ Event emitted successfully");
+      console.log(" Event emitted successfully");
     } else {
-      console.log("❌ Receiver socket not found");
+      console.log(" Receiver socket not found");
     }
 
     console.log("====================================");

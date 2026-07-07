@@ -23,7 +23,7 @@ app.use(cookieParser());
 app.use(cors({
       origin: [
     "http://localhost:5173",
-    "https://chatmee.onrender.com/"
+    "https://chatmee.onrender.com"
   ],
     credentials: true,
 })
