@@ -43,6 +43,7 @@ export const sendMessage = async (req, res) => {
     const senderId = req.user._id;
 
     let imageUrl;
+
     if (image) {
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
@@ -58,17 +59,34 @@ export const sendMessage = async (req, res) => {
 
     await newMessage.save();
 
+    console.log("====================================");
+    console.log("📩 NEW MESSAGE SAVED");
+    console.log("Sender ID:", senderId.toString());
+    console.log("Receiver ID:", receiverId);
+
     const receiverSocketId = getReceiverSocketId(receiverId);
+
+    console.log("Receiver Socket ID:", receiverSocketId);
+
     if (receiverSocketId) {
+      console.log("✅ Emitting 'newMessage' event...");
       io.to(receiverSocketId).emit("newMessage", newMessage);
+      console.log("✅ Event emitted successfully");
+    } else {
+      console.log("❌ Receiver socket not found");
     }
+
+    console.log("====================================");
 
     res.status(201).json(newMessage);
   } catch (error) {
     console.log("========== SEND MESSAGE ERROR ==========");
     console.log(error);
     console.log(error.message);
-    res.status(500).json({ error: "Internal server Error" });
+
+    res.status(500).json({
+      error: "Internal server error",
+    });
   }
 };
 

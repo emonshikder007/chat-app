@@ -7,31 +7,51 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173"],
+    origin: ["https://chatmee.onrender.com/"],
+    credentials: true,
   },
 });
 
+// userId -> socketId
+const userSocketMap = {};
+
 export function getReceiverSocketId(userId) {
+  console.log("getReceiverSocketId() =>", userId);
+  console.log("Current Socket Map =>", userSocketMap);
+
   return userSocketMap[userId];
 }
 
-// Used to store online users
-const userSocketMap = {}; // {userId: socketId}
-
 io.on("connection", (socket) => {
-  console.log("A user is connected",socket.id);
+  console.log("=================================");
+  console.log("✅ USER CONNECTED");
+  console.log("Socket ID:", socket.id);
 
   const userId = socket.handshake.query.userId;
-  if(userId) userSocketMap[userId] = socket.id
 
-  io.emit("getOnlineUsers",Object.keys(userSocketMap));
+  console.log("User ID:", userId);
 
+  if (userId) {
+    userSocketMap[userId] = socket.id;
+  }
+
+  console.log("Current Socket Map:");
+  console.log(userSocketMap);
+
+  io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
   socket.on("disconnect", () => {
-    console.log("A user disconnected", socket.id);
+    console.log("=================================");
+    console.log("❌ USER DISCONNECTED");
+    console.log("User ID:", userId);
+
     delete userSocketMap[userId];
+
+    console.log("Current Socket Map:");
+    console.log(userSocketMap);
+
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });
-})
+});
 
 export { io, app, server };
