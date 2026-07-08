@@ -2,6 +2,42 @@ import { X } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
+const formatLastSeen = (date) => {
+  if (!date) return "Offline";
+
+  const lastSeen = new Date(date);
+  const now = new Date();
+
+  const diff = Math.floor((now - lastSeen) / 1000);
+
+  if (diff < 60) {
+    return "Last seen just now";
+  }
+
+  if (diff < 3600) {
+    return `Last seen ${Math.floor(diff / 60)} minute(s) ago`;
+  }
+
+  if (diff < 86400) {
+    return `Last seen today at ${lastSeen.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  }
+
+  if (diff < 172800) {
+    return `Last seen yesterday at ${lastSeen.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  }
+
+  return `Last seen ${lastSeen.toLocaleDateString()} ${lastSeen.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+};
+
 const ChatHeader = () => {
   const { selectedChat, setSelectedChat } = useChatStore();
   const { onlineUsers, authUser } = useAuthStore();
@@ -36,7 +72,9 @@ const ChatHeader = () => {
             </h3>
             {isPrivate && (
               <p className="text-sm text-base-content/70">
-                {onlineUsers.includes(data._id) ? "Online" : "Offline"}
+                {onlineUsers.includes(data._id)
+                  ? " Online"
+                  : formatLastSeen(data.lastSeen)}
               </p>
             )}
           </div>
