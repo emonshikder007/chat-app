@@ -3,7 +3,7 @@ import { axiosInstance } from "../lib/axios.js";
 import { toast } from "react-hot-toast";
 import { io } from "socket.io-client";
 const BASE_URL =
-  import.meta.env.MODE === "development"  ? "http://localhost:5001"  : "https://chatmee.onrender.com";
+     import.meta.env.MODE === "development" ? "http://localhost:5001" : "https://chatmee.onrender.com";
 
 
 export const useAuthStore = create((set, get) => ({
@@ -11,19 +11,19 @@ export const useAuthStore = create((set, get) => ({
      isSigningUp: false,
      isLoggingIn: false,
      isUpdatingProfile: false,
-     isCheckingAuth:true,
+     isCheckingAuth: true,
      onlineUsers: [],
      socket: null,
 
-     checkAuth: async() => {
+     checkAuth: async () => {
           try {
                const res = await axiosInstance.get("/auth/check");
 
-               set({ authUser:res.data });
+               set({ authUser: res.data });
                get().connectSocket()
           } catch (error) {
                console.log("Error in checkAuth: ", error);
-               set({ authUser:null });
+               set({ authUser: null });
           } finally {
                set({ isCheckingAuth: false });
           }
@@ -31,19 +31,19 @@ export const useAuthStore = create((set, get) => ({
 
      signup: async (data) => {
           set({ isSigningUp: true });
-        try {
-           
-          const res = await axiosInstance.post("/auth/signup", data);
-          set({ authUser: res.data });
-          toast.success("Account created successfully");
-          get().connectSocket()
-          
+          try {
 
-        } catch (error) {
-          toast.error(error.response?.data?.message || "Signup failed");
-        } finally {
-          set({ isSigningUp: false });
-        }
+               const res = await axiosInstance.post("/auth/signup", data);
+               set({ authUser: res.data });
+               toast.success("Account created successfully");
+               get().connectSocket()
+
+
+          } catch (error) {
+               toast.error(error.response?.data?.message || "Signup failed");
+          } finally {
+               set({ isSigningUp: false });
+          }
      },
 
      login: async (data) => {
@@ -56,7 +56,7 @@ export const useAuthStore = create((set, get) => ({
                get().connectSocket()
           } catch (error) {
                toast.error("Error in login");
-          }finally {
+          } finally {
                set({ isLoggingIn: false });
           }
      },
@@ -72,40 +72,70 @@ export const useAuthStore = create((set, get) => ({
           }
      },
 
-     updateProfile: async(data) => {
-         set({ isUpdatingProfile: true });
-         try {
-          const res = await axiosInstance.put("/auth/update-profile", data);
-          set({ authUser: res.data });
-          toast.success("Profile updated successfully");
-         } catch (error) {
-          console.log("error in update profile", error);
-          toast.error("Error in update profile");
-         } finally {
-          set({ isUpdatingProfile: false });
-         }
+     updateProfile: async (data) => {
+          set({ isUpdatingProfile: true });
+          try {
+               const res = await axiosInstance.put("/auth/update-profile", data);
+               set({ authUser: res.data });
+               toast.success("Profile updated successfully");
+          } catch (error) {
+               console.log("error in update profile", error);
+               toast.error("Error in update profile");
+          } finally {
+               set({ isUpdatingProfile: false });
+          }
      },
 
      connectSocket: () => {
-        const {authUser} = get()
+          const { authUser } = get();
 
-        if(!authUser || get().socket?.connected) return;
+          if (!authUser || get().socket?.connected) return;
 
-        const socket = io(BASE_URL, {
-          query:{
-               userId: authUser._id,
-          },
-        });
-        socket.connect();
+          const socket = io(BASE_URL, {
+               query: {
+                    userId: authUser._id,
+               },
 
-        set({ socket:socket });
+               withCredentials: true,
+               transports: ["websocket"],
 
-        socket.on("getOnlineUsers", (userIds) => {
-          set({ onlineUsers: userIds });
-        })
+               reconnection: true,
+               reconnectionAttempts: Infinity,
+               reconnectionDelay: 1000,
+          });
+
+          // ===== DEBUG =====
+          socket.on("connect", () => {
+               console.log("🟢 CONNECTED:", socket.id);
+          });
+
+          socket.on("disconnect", (reason) => {
+               console.log("🔴 DISCONNECTED:", reason);
+          });
+
+          socket.on("connect_error", (err) => {
+               console.log("❌ CONNECT ERROR:", err.message);
+          });
+
+          socket.on("getOnlineUsers", (userIds) => {
+               set({ onlineUsers: userIds });
+          });
+
+          set({ socket });
+
+          socket.connect();
      },
 
      disconnectSocket: () => {
-          if (get().socket?.connected) get().socket.disconnect();
+          const socket = get().socket;
+
+          if (socket) {
+               socket.disconnect();
+          }
+
+          set({
+               socket: null,
+               onlineUsers: [],
+          });
      },
 }));
