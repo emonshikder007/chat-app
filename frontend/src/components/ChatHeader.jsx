@@ -8,34 +8,87 @@ const formatLastSeen = (date) => {
   const lastSeen = new Date(date);
   const now = new Date();
 
-  const diff = Math.floor((now - lastSeen) / 1000);
 
-  if (diff < 60) {
+  if (isNaN(lastSeen.getTime())) return "Offline";
+
+  const diffMs = now - lastSeen;
+  const diffSec = Math.floor(diffMs / 1000);
+
+
+  if (diffSec < 0) return "Online";
+
+
+  if (diffSec < 10) {
     return "Last seen just now";
   }
 
-  if (diff < 3600) {
-    return `Last seen ${Math.floor(diff / 60)} minute(s) ago`;
+
+  if (diffSec < 60) {
+    return `Last seen ${diffSec} seconds ago`;
   }
 
-  if (diff < 86400) {
-    return `Last seen today at ${lastSeen.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
+ 
+  const diffMin = Math.floor(diffSec / 60);
+
+  if (diffMin === 1) {
+    return "Last seen 1 minute ago";
   }
 
-  if (diff < 172800) {
-    return `Last seen yesterday at ${lastSeen.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
+  if (diffMin < 60) {
+    return `Last seen ${diffMin} minutes ago`;
   }
 
-  return `Last seen ${lastSeen.toLocaleDateString()} ${lastSeen.toLocaleTimeString([], {
-    hour: "2-digit",
+  const time = lastSeen.toLocaleTimeString([], {
+    hour: "numeric",
     minute: "2-digit",
-  })}`;
+    hour12: true,
+  });
+
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const messageDay = new Date(
+    lastSeen.getFullYear(),
+    lastSeen.getMonth(),
+    lastSeen.getDate()
+  );
+
+  const dayDiff = Math.round(
+    (today - messageDay) / (1000 * 60 * 60 * 24)
+  );
+
+
+  if (dayDiff === 0) {
+    return `Last seen today at ${time}`;
+  }
+
+
+  if (dayDiff === 1) {
+    return `Last seen yesterday at ${time}`;
+  }
+
+
+  if (dayDiff < 7) {
+    const weekday = lastSeen.toLocaleDateString([], {
+      weekday: "long",
+    });
+
+    return `Last seen ${weekday} at ${time}`;
+  }
+
+
+  if (lastSeen.getFullYear() === now.getFullYear()) {
+    return `Last seen ${lastSeen.toLocaleDateString([], {
+      day: "numeric",
+      month: "long",
+    })} at ${time}`;
+  }
+
+
+  return `Last seen ${lastSeen.toLocaleDateString([], {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })} at ${time}`;
 };
 
 const ChatHeader = () => {
