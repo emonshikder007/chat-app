@@ -59,9 +59,7 @@ export const sendMessage = async (req, res) => {
 
     await newMessage.save();
 
-    console.log("========== NEW MESSAGE ==========");
-    console.log("Sender:", senderId.toString());
-    console.log("Receiver:", receiverId);
+
 
     const receiverSocketId = getReceiverSocketId(receiverId);
 
@@ -74,15 +72,9 @@ export const sendMessage = async (req, res) => {
       console.log("SOCKET NOT FOUND");
     }
 
-    console.log("================================");
-
-    console.log("====================================");
 
     res.status(201).json(newMessage);
   } catch (error) {
-    console.log("========== SEND MESSAGE ERROR ==========");
-    console.log(error);
-    console.log(error.message);
 
     res.status(500).json({
       error: "Internal server error",
@@ -115,11 +107,6 @@ export const sendGroupMessage = async (req, res) => {
 
     res.status(201).json(newMessage);
   } catch (error) {
-    console.log("========== GROUP ERROR ==========");
-    console.log(error);
-    console.log(error.message);
-    console.log(error.stack);
-
     res.status(500).json({
       error: error.message,
     });
