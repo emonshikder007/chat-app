@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
 import MessageInput from "./MessageInput";
 import ChatHeader from "./ChatHeader";
+import ImageViewer from "./ImageViewer";
 import MessageSkeleton from "./skeleton/MessageSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
@@ -24,20 +25,21 @@ const ChatContainer = () => {
 
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
+  const [selectedImage, setSelectedImage] = useState(null);
   console.log("getMessages:", getMessages);
   console.log("subscribeToMessages:", subscribeToMessages);
   console.log("unsubscribeFromMessages:", unsubscribeFromMessages);
 
   useEffect(() => {
-  if (!selectedChat?.data?._id) return;
+    if (!selectedChat?.data?._id) return;
 
-  getMessages(selectedChat.data._id, selectedChat.type);
-  subscribeToMessages();
+    getMessages(selectedChat.data._id, selectedChat.type);
+    subscribeToMessages();
 
-  return () => {
-    unsubscribeFromMessages();
-  };
-}, [selectedChat?.data?._id]);
+    return () => {
+      unsubscribeFromMessages();
+    };
+  }, [selectedChat?.data?._id]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
@@ -106,7 +108,17 @@ const ChatContainer = () => {
                 <img
                   src={message.image}
                   alt="Attachment"
-                  className="sm:max-w-[200px] rounded-md mb-2"
+                  onClick={() => setSelectedImage(message.image)}
+                  className="
+                             sm:max-w-[220px]
+                             max-w-[180px]
+                             rounded-xl
+                             mb-2
+                             cursor-pointer
+                             hover:opacity-90
+                             transition
+                             duration-200
+                          "
                 />
               )}
               {message.text && <p>{message.text}</p>}
@@ -115,6 +127,10 @@ const ChatContainer = () => {
         ))}
       </div>
 
+      <ImageViewer
+        image={selectedImage}
+        onClose={() => setSelectedImage(null)}
+      />
       <MessageInput />
     </div>
   );
