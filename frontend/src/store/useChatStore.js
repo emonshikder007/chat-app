@@ -104,18 +104,18 @@ export const useChatStore = create((set, get) => ({
 
 
   leaveGroup: async (groupId) => {
-  try {
-    await axiosInstance.post("/groups/leave", {
-      groupId,
-    });
+    try {
+      await axiosInstance.post("/groups/leave", {
+        groupId,
+      });
 
-    toast.success("Left group");
-  } catch (error) {
-    toast.error(
-      error.response?.data?.error
-    );
-  }
-},
+      toast.success("Left group");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error
+      );
+    }
+  },
 
   // ===== MESSAGES =====
   getMessages: async (id, type = "private") => {
@@ -151,120 +151,148 @@ export const useChatStore = create((set, get) => ({
 
   },
 
+
+  deleteMessage: async (messageId) => {
+    try {
+      await axiosInstance.delete(`/messages/${messageId}`);
+
+      set((state) => ({
+        messages: state.messages.filter(
+          (msg) => msg._id !== messageId
+        ),
+      }));
+
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error || "Failed to delete message"
+      );
+    }
+  },
+
   // ===== SOCKET SUBSCRIBE =====
 
-subscribeToMessages: () => {
-  console.log("==================================");
-  console.log("subscribeToMessages CALLED");
+  subscribeToMessages: () => {
+    console.log("==================================");
+    console.log("subscribeToMessages CALLED");
 
-  const socket = useAuthStore.getState().socket;
-  const authUser = useAuthStore.getState().authUser;
+    const socket = useAuthStore.getState().socket;
+    const authUser = useAuthStore.getState().authUser;
 
-  console.log("Socket:", socket);
-  console.log("Socket Connected:", socket?.connected);
-  console.log("Auth User:", authUser);
+    console.log("Socket:", socket);
+    console.log("Socket Connected:", socket?.connected);
+    console.log("Auth User:", authUser);
 
-  if (!socket) {
-    console.log(" Socket NOT FOUND");
-    return;
-  }
-
-  socket.off("newMessage");
-  socket.off("newGroupMessage");
-
-  console.log(" Listeners Registered");
-
-  // ================= PRIVATE =================
-  socket.on("newMessage", (newMessage) => {
-    console.log("=================================");
-    console.log(" NEW MESSAGE EVENT RECEIVED");
-    console.log(newMessage);
-
-    const selectedChat = get().selectedChat;
-
-    console.log("Selected Chat:", selectedChat);
-
-    if (!selectedChat) {
-      console.log(" No selected chat");
+    if (!socket) {
+      console.log(" Socket NOT FOUND");
       return;
     }
 
-    if (selectedChat.type !== "private") {
-      console.log(" Current chat is NOT private");
-      return;
-    }
+    socket.off("newMessage");
+    socket.off("newGroupMessage");
 
-    const myId = authUser?._id;
+    console.log(" Listeners Registered");
 
-    console.log("My ID:", myId);
-    console.log("Chat User:", selectedChat.data._id);
+    // ================= PRIVATE =================
+    socket.on("newMessage", (newMessage) => {
+      console.log("=================================");
+      console.log(" NEW MESSAGE EVENT RECEIVED");
+      console.log(newMessage);
 
-    const isRelevant =
-      newMessage.senderId === selectedChat.data._id ||
-      newMessage.receiverId === selectedChat.data._id ||
-      newMessage.senderId === myId ||
-      newMessage.receiverId === myId;
+      const selectedChat = get().selectedChat;
 
-    console.log("Relevant:", isRelevant);
+      console.log("Selected Chat:", selectedChat);
 
-    if (!isRelevant) {
-      console.log(" Ignored");
-      return;
-    }
+      if (!selectedChat) {
+        console.log(" No selected chat");
+        return;
+      }
 
-    set((state) => {
-      const exists = state.messages.some(
-        (m) => m._id === newMessage._id
-      );
+      if (selectedChat.type !== "private") {
+        console.log(" Current chat is NOT private");
+        return;
+      }
 
-      console.log("Already Exists:", exists);
+      const myId = authUser?._id;
 
-      if (exists) return state;
+      console.log("My ID:", myId);
+      console.log("Chat User:", selectedChat.data._id);
 
-      console.log(" Adding Message");
+      const isRelevant =
+        newMessage.senderId === selectedChat.data._id ||
+        newMessage.receiverId === selectedChat.data._id ||
+        newMessage.senderId === myId ||
+        newMessage.receiverId === myId;
 
-      return {
-        messages: [...state.messages, newMessage],
-      };
+      console.log("Relevant:", isRelevant);
+
+      if (!isRelevant) {
+        console.log(" Ignored");
+        return;
+      }
+
+      set((state) => {
+        const exists = state.messages.some(
+          (m) => m._id === newMessage._id
+        );
+
+        console.log("Already Exists:", exists);
+
+        if (exists) return state;
+
+        console.log(" Adding Message");
+
+        return {
+          messages: [...state.messages, newMessage],
+        };
+      });
     });
-  });
 
-  // ================= GROUP =================
-  socket.on("newGroupMessage", (newMessage) => {
-    console.log(" GROUP MESSAGE RECEIVED");
-    console.log(newMessage);
+    // ================= GROUP =================
+    socket.on("newGroupMessage", (newMessage) => {
+      console.log(" GROUP MESSAGE RECEIVED");
+      console.log(newMessage);
 
-    const selectedChat = get().selectedChat;
+      const selectedChat = get().selectedChat;
 
-    if (!selectedChat) return;
-    if (selectedChat.type !== "group") return;
+      if (!selectedChat) return;
+      if (selectedChat.type !== "group") return;
 
-    if (newMessage.groupId !== selectedChat.data._id) return;
+      if (newMessage.groupId !== selectedChat.data._id) return;
 
-    set((state) => {
-      const exists = state.messages.some(
-        (m) => m._id === newMessage._id
-      );
+      set((state) => {
+        const exists = state.messages.some(
+          (m) => m._id === newMessage._id
+        );
 
-      if (exists) return state;
+        if (exists) return state;
 
-      return {
-        messages: [...state.messages, newMessage],
-      };
+        return {
+          messages: [...state.messages, newMessage],
+        };
+      });
     });
-  });
 
-  console.log("==================================");
-},
+    socket.on("messageDeleted", ({ messageId }) => {
+      set((state) => ({
+        messages: state.messages.filter(
+          (msg) => msg._id !== messageId
+        ),
+      }));
+    });
+
+    console.log("==================================");
+  },
 
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
+
     if (!socket) return;
+
     socket.off("newMessage");
     socket.off("newGroupMessage");
+    socket.off("messageDeleted");
   },
-
   setSelectedChat: (chat) =>
     set({
       selectedChat: chat,

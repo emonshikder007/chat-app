@@ -17,6 +17,9 @@ const ChatContainer = () => {
   const unsubscribeFromMessages = useChatStore(
     (s) => s.unsubscribeFromMessages
   );
+  const deleteMessage = useChatStore(
+    (s) => s.deleteMessage
+  );
 
   console.log("STORE CHECK ", {
     getMessages,
@@ -165,9 +168,17 @@ const ChatContainer = () => {
           console.log("Edit:", selectedMessage);
           setMenuOpen(false);
         }}
-        onDelete={() => {
-          console.log("Delete:", selectedMessage);
+        onDelete={async () => {
+          if (!selectedMessage) return;
+
+          const ok = confirm("Delete this message?");
+
+          if (!ok) return;
+
+          await deleteMessage(selectedMessage._id);
+
           setMenuOpen(false);
+          setSelectedMessage(null);
         }}
       />
 
