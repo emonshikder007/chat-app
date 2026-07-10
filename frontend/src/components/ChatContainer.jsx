@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 import MessageInput from "./MessageInput";
+import MessageMenu from "./MessageMenu";
 import ChatHeader from "./ChatHeader";
 import ImageViewer from "./ImageViewer";
 import MessageSkeleton from "./skeleton/MessageSkeleton";
@@ -26,9 +27,10 @@ const ChatContainer = () => {
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState(null);
-  console.log("getMessages:", getMessages);
-  console.log("subscribeToMessages:", subscribeToMessages);
-  console.log("unsubscribeFromMessages:", unsubscribeFromMessages);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const pressTimer = useRef(null);
 
   useEffect(() => {
     if (!selectedChat?.data?._id) return;
@@ -46,6 +48,19 @@ const ChatContainer = () => {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  const startLongPress = (message) => {
+    if (message.senderId !== authUser._id) return;
+
+    pressTimer.current = setTimeout(() => {
+      setSelectedMessage(message);
+      setMenuOpen(true);
+    }, 600);
+  };
+
+  const cancelLongPress = () => {
+    clearTimeout(pressTimer.current);
+  };
 
   if (isMessagesLoading)
     return (
@@ -103,7 +118,15 @@ const ChatContainer = () => {
               </time>
             </div>
 
-            <div className="chat-bubble flex flex-col">
+            <div
+              className="chat-bubble flex flex-col"
+              onTouchStart={() => startLongPress(message)}
+              onTouchEnd={cancelLongPress}
+              onTouchMove={cancelLongPress}
+              onMouseDown={() => startLongPress(message)}
+              onMouseUp={cancelLongPress}
+              onMouseLeave={cancelLongPress}
+            >
               {message.image && (
                 <img
                   src={message.image}
@@ -131,6 +154,23 @@ const ChatContainer = () => {
         image={selectedImage}
         onClose={() => setSelectedImage(null)}
       />
+
+      <MessageMenu
+        open={menuOpen}
+        onClose={() => {
+          setMenuOpen(false);
+          setSelectedMessage(null);
+        }}
+        onEdit={() => {
+          console.log("Edit:", selectedMessage);
+          setMenuOpen(false);
+        }}
+        onDelete={() => {
+          console.log("Delete:", selectedMessage);
+          setMenuOpen(false);
+        }}
+      />
+
       <MessageInput />
     </div>
   );
