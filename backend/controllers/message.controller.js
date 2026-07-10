@@ -114,7 +114,6 @@ export const sendGroupMessage = async (req, res) => {
 };
 
 
-
 export const deleteMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
@@ -127,21 +126,39 @@ export const deleteMessage = async (req, res) => {
       });
     }
 
+    // Only sender can delete the message
     if (message.senderId.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         error: "Unauthorized",
       });
     }
 
+    // Delete from database
     await Message.findByIdAndDelete(messageId);
 
+    // =========================
+    // REAL-TIME DELETE
+    // =========================
     if (message.chatType === "private") {
+
+      // Receiver
       const receiverSocketId = getReceiverSocketId(
         message.receiverId.toString()
       );
 
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("messageDeleted", {
+          messageId,
+        });
+      }
+
+      // Sender
+      const senderSocketId = getReceiverSocketId(
+        message.senderId.toString()
+      );
+
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("messageDeleted", {
           messageId,
         });
       }
@@ -153,7 +170,7 @@ export const deleteMessage = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.log("Delete Message Error:", error);
 
     res.status(500).json({
       error: "Internal server error",
