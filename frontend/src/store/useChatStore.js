@@ -173,10 +173,6 @@ export const useChatStore = create((set, get) => ({
 
   subscribeToMessages: () => {
 
-
-    socket.on("newMessage", (msg) => {
-      console.log("NEW MESSAGE RECEIVED", msg);
-    });
     console.log("==================================");
     console.log("subscribeToMessages CALLED");
 
