@@ -20,45 +20,40 @@ const io = new Server(server, {
 const userSocketMap = {};
 
 export function getReceiverSocketId(userId) {
-  console.log("getReceiverSocketId() =>", userId);
-  console.log("Current Socket Map =>", userSocketMap);
-
   return userSocketMap[userId];
 }
 
 io.on("connection", (socket) => {
   console.log("=================================");
-  console.log(" USER CONNECTED");
+  console.log("USER CONNECTED");
   console.log("Socket ID:", socket.id);
 
   const userId = socket.handshake.query.userId;
-  console.log("Handshake Query:", socket.handshake.query);
-
-  console.log("User ID:", userId);
 
   if (userId) {
     userSocketMap[userId] = socket.id;
-    console.table(userSocketMap);
   }
 
-  console.log("Current Socket Map:");
-  console.log(userSocketMap);
+  console.table(userSocketMap);
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
   socket.on("disconnect", async () => {
     console.log("=================================");
-    console.log("USER OFFLINE:", userId);
+    console.log("USER DISCONNECTED:", userId);
+    console.log("Socket:", socket.id);
 
-    delete userSocketMap[userId];
+    if (userSocketMap[userId] === socket.id) {
+      delete userSocketMap[userId];
+    }
+
+    console.table(userSocketMap);
 
     try {
       if (userId) {
         await User.findByIdAndUpdate(userId, {
           lastSeen: new Date(),
         });
-
-        console.log(" Last Seen Updated");
       }
     } catch (err) {
       console.log("Last Seen Update Error:", err.message);

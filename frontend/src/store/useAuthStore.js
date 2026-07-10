@@ -86,6 +86,7 @@ export const useAuthStore = create((set, get) => ({
           }
      },
 
+  
      connectSocket: () => {
           const { authUser } = get();
 
@@ -104,7 +105,7 @@ export const useAuthStore = create((set, get) => ({
                reconnectionDelay: 1000,
           });
 
-          // ===== DEBUG =====
+     
           socket.on("connect", () => {
                console.log(" CONNECTED:", socket.id);
           });
@@ -139,3 +140,4 @@ export const useAuthStore = create((set, get) => ({
           });
      },
 }));
+
