@@ -266,8 +266,7 @@ export const useChatStore = create((set, get) => ({
     });
 
     socket.on("messageDeleted", ({ messageId }) => {
-      console.log("MESSAGE DELETED EVENT RECEIVED");
-      console.log(messageId);
+
 
       set((state) => ({
         messages: state.messages.filter(
