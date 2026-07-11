@@ -176,17 +176,12 @@ const ChatContainer = () => {
 
           document.getElementById("edit_modal").showModal();
         }}
-        onDelete={async () => {
+        onDelete={() => {
           if (!selectedMessage) return;
 
-          const ok = confirm("Delete this message?");
-
-          if (!ok) return;
-
-          await deleteMessage(selectedMessage._id);
-
           setMenuOpen(false);
-          setSelectedMessage(null);
+
+          document.getElementById("delete_modal").showModal();
         }}
       />
 
@@ -240,6 +235,47 @@ const ChatContainer = () => {
               }}
             >
               Save Changes
+            </button>
+
+          </div>
+
+        </div>
+      </dialog>
+
+      <dialog id="delete_modal" className="modal">
+        <div className="modal-box">
+
+          <h3 className="font-bold text-lg">
+            Delete Message?
+          </h3>
+
+          <p className="py-3 text-sm opacity-70">
+            This action cannot be undone.
+          </p>
+
+          <div className="modal-action">
+
+            <button
+              className="btn"
+              onClick={() =>
+                document.getElementById("delete_modal").close()
+              }
+            >
+              Cancel
+            </button>
+
+            <button
+              className="btn btn-error"
+              onClick={async () => {
+                await deleteMessage(selectedMessage._id);
+
+                document.getElementById("delete_modal").close();
+
+                setMenuOpen(false);
+                setSelectedMessage(null);
+              }}
+            >
+              Delete
             </button>
 
           </div>
