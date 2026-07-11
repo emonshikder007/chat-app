@@ -35,8 +35,9 @@ const ChatContainer = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-
   const pressTimer = useRef(null);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [editText, setEditText] = useState("");
 
   useEffect(() => {
     if (!selectedChat?.data?._id) return;
