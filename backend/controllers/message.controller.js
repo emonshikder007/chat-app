@@ -192,7 +192,6 @@ export const editMessage = async (req, res) => {
       });
     }
 
-    // Only sender can edit
     if (message.senderId.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         error: "Unauthorized",
@@ -202,6 +201,26 @@ export const editMessage = async (req, res) => {
     message.text = text;
 
     await message.save();
+
+    // Sender
+    const senderSocketId = getReceiverSocketId(
+      message.senderId.toString()
+    );
+
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messageEdited", message);
+    }
+
+    // Receiver
+    if (message.chatType === "private") {
+      const receiverSocketId = getReceiverSocketId(
+        message.receiverId.toString()
+      );
+
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("messageEdited", message);
+      }
+    }
 
     res.status(200).json(message);
 

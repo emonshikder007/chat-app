@@ -296,6 +296,16 @@ export const useChatStore = create((set, get) => ({
       }));
     });
 
+    socket.on("messageEdited", (updatedMessage) => {
+      set((state) => ({
+        messages: state.messages.map((msg) =>
+          msg._id === updatedMessage._id
+            ? updatedMessage
+            : msg
+        ),
+      }));
+    });
+
     console.log("==================================");
   },
 
@@ -308,6 +318,7 @@ export const useChatStore = create((set, get) => ({
     socket.off("newMessage");
     socket.off("newGroupMessage");
     socket.off("messageDeleted");
+    socket.off("messageEdited");
   },
   setSelectedChat: (chat) =>
     set({
