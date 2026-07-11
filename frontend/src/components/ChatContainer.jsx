@@ -167,22 +167,14 @@ const ChatContainer = () => {
           setMenuOpen(false);
           setSelectedMessage(null);
         }}
-        onEdit={async () => {
+        onEdit={() => {
           if (!selectedMessage) return;
 
-          const newText = prompt(
-            "Edit your message:",
-            selectedMessage.text
-          );
-
-          if (newText === null) return;
-
-          if (newText.trim() === "") return;
-
-          await editMessage(selectedMessage._id, newText);
+          setEditText(selectedMessage.text);
 
           setMenuOpen(false);
-          setSelectedMessage(null);
+
+          document.getElementById("edit_modal").showModal();
         }}
         onDelete={async () => {
           if (!selectedMessage) return;
@@ -197,6 +189,63 @@ const ChatContainer = () => {
           setSelectedMessage(null);
         }}
       />
+
+      <dialog id="edit_modal" className="modal">
+        <div className="modal-box">
+
+          <h3 className="font-bold text-lg flex items-center gap-2">
+            ✏️ Edit Message
+          </h3>
+
+          <input
+            autoFocus
+            type="text"
+            className="input input-bordered w-full mt-5"
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            onKeyDown={async (e) => {
+              if (e.key === "Enter") {
+                await editMessage(selectedMessage._id, editText);
+
+                document.getElementById("edit_modal").close();
+
+                setSelectedMessage(null);
+                setEditText("");
+              }
+            }}
+          />
+
+          <div className="modal-action">
+
+            <button
+              className="btn"
+              onClick={() => {
+                document.getElementById("edit_modal").close();
+                setSelectedMessage(null);
+                setEditText("");
+              }}
+            >
+              Cancel
+            </button>
+
+            <button
+              className="btn btn-primary"
+              onClick={async () => {
+                await editMessage(selectedMessage._id, editText);
+
+                document.getElementById("edit_modal").close();
+
+                setSelectedMessage(null);
+                setEditText("");
+              }}
+            >
+              Save Changes
+            </button>
+
+          </div>
+
+        </div>
+      </dialog>
 
       <MessageInput />
     </div>
