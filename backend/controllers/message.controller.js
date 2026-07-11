@@ -177,3 +177,39 @@ export const deleteMessage = async (req, res) => {
     });
   }
 };
+
+
+export const editMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { text } = req.body;
+
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({
+        error: "Message not found",
+      });
+    }
+
+    // Only sender can edit
+    if (message.senderId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        error: "Unauthorized",
+      });
+    }
+
+    message.text = text;
+
+    await message.save();
+
+    res.status(200).json(message);
+
+  } catch (error) {
+    console.log("Edit Message Error:", error);
+
+    res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+};

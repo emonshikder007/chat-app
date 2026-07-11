@@ -20,6 +20,9 @@ const ChatContainer = () => {
   const deleteMessage = useChatStore(
     (s) => s.deleteMessage
   );
+  const editMessage = useChatStore(
+    (s) => s.editMessage
+  );
 
   console.log("STORE CHECK ", {
     getMessages,
@@ -164,9 +167,22 @@ const ChatContainer = () => {
           setMenuOpen(false);
           setSelectedMessage(null);
         }}
-        onEdit={() => {
-          console.log("Edit:", selectedMessage);
+        onEdit={async () => {
+          if (!selectedMessage) return;
+
+          const newText = prompt(
+            "Edit your message:",
+            selectedMessage.text
+          );
+
+          if (newText === null) return;
+
+          if (newText.trim() === "") return;
+
+          await editMessage(selectedMessage._id, newText);
+
           setMenuOpen(false);
+          setSelectedMessage(null);
         }}
         onDelete={async () => {
           if (!selectedMessage) return;

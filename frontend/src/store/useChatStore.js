@@ -161,6 +161,27 @@ export const useChatStore = create((set, get) => ({
       );
     }
   },
+
+  editMessage: async (messageId, text) => {
+    try {
+      const res = await axiosInstance.put(
+        `/messages/edit/${messageId}`,
+        { text }
+      );
+
+      set((state) => ({
+        messages: state.messages.map((msg) =>
+          msg._id === messageId ? res.data : msg
+        ),
+      }));
+
+      toast.success("Message updated");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error || "Failed to edit message"
+      );
+    }
+  },
   // ===== SOCKET SUBSCRIBE =====
 
   subscribeToMessages: () => {
