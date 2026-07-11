@@ -68,6 +68,17 @@ const ChatContainer = () => {
     clearTimeout(pressTimer.current);
   };
 
+  const handleCopy = async () => {
+    if (!selectedMessage?.text) return;
+
+    await navigator.clipboard.writeText(selectedMessage.text);
+
+    toast.success("Message copied!");
+
+    setMenuOpen(false);
+    setSelectedMessage(null);
+  };
+
   if (isMessagesLoading)
     return (
       <div className="flex-1 flex flex-col overflow-auto">
@@ -183,6 +194,8 @@ const ChatContainer = () => {
 
           document.getElementById("delete_modal").showModal();
         }}
+
+        onCopy={handleCopy}
       />
 
       <dialog id="edit_modal" className="modal">

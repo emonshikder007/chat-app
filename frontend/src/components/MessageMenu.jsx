@@ -1,10 +1,11 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Copy } from "lucide-react";
 
 const MessageMenu = ({
   open,
   onClose,
   onEdit,
   onDelete,
+  onCopy,
 }) => {
   if (!open) return null;
 
@@ -23,6 +24,14 @@ const MessageMenu = ({
         >
           <Pencil size={18} />
           Edit
+        </button>
+
+        <button
+          onClick={onCopy}
+          className="btn btn-ghost justify-start w-full rounded-none"
+        >
+          <Copy size={18} />
+          Copy
         </button>
 
         <button
