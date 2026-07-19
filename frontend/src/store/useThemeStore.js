@@ -9,5 +9,5 @@ export const useThemeStore = create((set) => ({
   },
 }));
 
-// Ensure the stored theme is applied on initial load
+
 document.documentElement.setAttribute("data-theme", localStorage.getItem("chat-theme") || "dark");
