@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /login
+Disallow: /signup
+Disallow: /profile
+Disallow: /settings
+
+Sitemap: https://chatmee.onrender.com/sitemap.xml
